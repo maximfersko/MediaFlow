@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: "vault://secret/mediaflow/api-gateway"
+  cloud:
+    vault:
+      uri: ${VAULT_ADDR:http://vault:8200}
+      token: ${VAULT_TOKEN:root-dev-token}
+      kv:
+        enabled: true
+        backend: secret
+        default-context: mediaflow/api-gateway
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8180/realms/mediaflow
+  data:
+    redis:
+      host: ${redis.host:redis}
+      port: ${redis.port:6379}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://tempo:4318}/v1/traces
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId},%X{spanId}] %logger{36} - %msg%n"

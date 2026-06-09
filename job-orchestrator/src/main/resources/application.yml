@@ -1,0 +1,65 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: job-orchestrator
+  config:
+    import: "vault://secret/mediaflow/job-orchestrator"
+  cloud:
+    vault:
+      uri: ${VAULT_ADDR:http://vault:8200}
+      token: ${VAULT_TOKEN:root-dev-token}
+      kv:
+        enabled: true
+        backend: secret
+        default-context: mediaflow/job-orchestrator
+  r2dbc:
+    url: r2dbc:postgresql://postgres:5432/mediaflow
+    username: ${db_username:mediaflow}
+    password: ${db_password:secret}
+    pool:
+      initial-size: 5
+      max-size: 30
+      max-idle-time: 30m
+      validation-query: SELECT 1
+  data:
+    redis:
+      host: ${redis.host:redis}
+      port: ${redis.port:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    consumer:
+      group-id: job-orchestrator
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8180/realms/mediaflow
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://tempo:4318}/v1/traces
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId},%X{spanId}] %logger{36} - %msg%n"

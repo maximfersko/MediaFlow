@@ -1,0 +1,120 @@
+{
+  "realm": "mediaflow",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
+
+  "clients": [
+    {
+      "clientId": "mediaflow-spa",
+      "name": "MediaFlow SPA",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "attributes": { "pkce.code.challenge.method": "S256" },
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["+"]
+    },
+    {
+      "clientId": "mediaflow-gateway",
+      "name": "MediaFlow API Gateway",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "${KEYCLOAK_CLIENT_SECRET}",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true
+    }
+  ],
+
+  "roles": {
+    "realm": [
+      { "name": "ROLE_USER",  "description": "Regular user" },
+      { "name": "ROLE_PRO",   "description": "Pro subscriber" },
+      { "name": "ROLE_ADMIN", "description": "Platform administrator" }
+    ]
+  },
+
+  "defaultRoles": ["ROLE_USER"],
+
+  "identityProviders": [
+    {
+      "alias": "google",
+      "displayName": "Continue with Google",
+      "providerId": "google",
+      "enabled": true,
+      "trustEmail": true,
+      "config": {
+        "clientId": "${GOOGLE_CLIENT_ID}",
+        "clientSecret": "${GOOGLE_CLIENT_SECRET}",
+        "defaultScope": "openid email profile",
+        "useJwksUrl": "true",
+        "syncMode": "IMPORT"
+      }
+    },
+    {
+      "alias": "github",
+      "displayName": "Continue with GitHub",
+      "providerId": "github",
+      "enabled": true,
+      "trustEmail": false,
+      "config": {
+        "clientId": "${GITHUB_CLIENT_ID}",
+        "clientSecret": "${GITHUB_CLIENT_SECRET}",
+        "defaultScope": "user:email",
+        "syncMode": "IMPORT"
+      }
+    }
+  ],
+
+  "identityProviderMappers": [
+    {
+      "name": "google-role-mapper",
+      "identityProviderAlias": "google",
+      "identityProviderMapper": "oidc-hardcoded-role-idp-mapper",
+      "config": { "syncMode": "INHERIT", "role": "ROLE_USER" }
+    },
+    {
+      "name": "github-role-mapper",
+      "identityProviderAlias": "github",
+      "identityProviderMapper": "oidc-hardcoded-role-idp-mapper",
+      "config": { "syncMode": "INHERIT", "role": "ROLE_USER" }
+    }
+  ],
+
+  "protocolMappers": [
+    {
+      "name": "plan-mapper",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usermodel-attribute-mapper",
+      "consentRequired": false,
+      "config": {
+        "user.attribute": "plan",
+        "id.token.claim": "true",
+        "access.token.claim": "true",
+        "claim.name": "plan",
+        "jsonType.label": "String"
+      }
+    }
+  ],
+
+  "users": [
+    {
+      "username": "testuser",
+      "email": "testuser@mediaflow.test",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "testpass", "temporary": false }],
+      "realmRoles": ["ROLE_USER"],
+      "attributes": { "plan": ["BASIC"] }
+    },
+    {
+      "username": "admin",
+      "email": "admin@mediaflow.test",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "adminpass", "temporary": false }],
+      "realmRoles": ["ROLE_ADMIN"],
+      "attributes": { "plan": ["UNLIMITED"] }
+    }
+  ]
+}

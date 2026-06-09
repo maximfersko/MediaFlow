@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: V1__initial_schema
+      author: mediaflow
+      changes:
+        - sqlFile:
+            path: migrations/V1__initial_schema.sql
+            relativeToChangelogFile: false
+            splitStatements: true

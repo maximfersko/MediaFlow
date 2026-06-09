@@ -1,0 +1,13 @@
+spring:
+  cloud:
+    vault:
+      enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/mediaflow
+  data:
+    redis:
+      host: localhost
+      port: 6379
