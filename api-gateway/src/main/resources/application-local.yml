@@ -2,6 +2,14 @@ spring:
   cloud:
     vault:
       enabled: false
+    gateway:
+      routes:
+        - id: test-route
+          uri: https://httpbin.org
+          predicates:
+            - Path=/test/**
+          filters:
+            - StripPrefix=1
   security:
     oauth2:
       resourceserver:

@@ -188,6 +188,12 @@ services:
       JAVA_TOOL_OPTIONS: ""
       VAULT_TOKEN: ${VAULT_TOKEN}
       VAULT_ADDR: http://vault:8200
+      RATE_LIMIT_BASIC_PER_SECOND: ${RATE_LIMIT_BASIC_PER_SECOND}
+      RATE_LIMIT_BASIC_BURST: ${RATE_LIMIT_BASIC_BURST}
+      RATE_LIMIT_BASIC_PER_HOUR: ${RATE_LIMIT_BASIC_PER_HOUR}
+      RATE_LIMIT_PRO_PER_SECOND: ${RATE_LIMIT_PRO_PER_SECOND}
+      RATE_LIMIT_PRO_BURST: ${RATE_LIMIT_PRO_BURST}
+      RATE_LIMIT_PRO_PER_HOUR: ${RATE_LIMIT_PRO_PER_HOUR}
     volumes:
       - ./otel/opentelemetry-javaagent.jar:/otel/opentelemetry-javaagent.jar
     depends_on:
@@ -290,6 +296,14 @@ services:
       GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    ports:
+      - "5540:5540"
+    depends_on:
+      redis:
+        condition: service_healthy
 
 volumes:
   postgres_data:

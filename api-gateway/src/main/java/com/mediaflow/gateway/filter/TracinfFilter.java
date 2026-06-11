@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -20,15 +21,24 @@ public class TracinfFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        return ReactiveSecurityContextHolder.getContext()
-                .flatMap(securityContext ->
+        return Mono.deferContextual(ctx -> {
+            var span = tracer.currentSpan();
 
-                )
+            return ReactiveSecurityContextHolder.getContext()
+                    .doOnNext(secCtx -> {
+                        var auth = secCtx.getAuthentication();
+                        if (auth != null && span != null) {
+                            span.tag("user.id", auth.getName());
+                            log.debug("tagged span user.id={}", auth.getName());
+                        }
+                    })
+                    .then(chain.filter(exchange));
+        });
     }
 
     @Override
     public int getOrder() {
-        return 0;
+        return Ordered.HIGHEST_PRECEDENCE + 10;
     }
 
 }

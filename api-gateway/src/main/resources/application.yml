@@ -18,6 +18,7 @@ spring:
       discovery:
         locator:
           enabled: false
+      routes: []
   security:
     oauth2:
       resourceserver:
@@ -44,5 +45,18 @@ management:
       endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://tempo:4318}/v1/traces
 
 logging:
+  level:
+    com.mediaflow.gateway.ratelimit: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId},%X{spanId}] %logger{36} - %msg%n"
+
+rate-limit:
+  plans:
+    BASIC:
+      per-second: ${RATE_LIMIT_BASIC_PER_SECOND:10}
+      burst: ${RATE_LIMIT_BASIC_BURST:20}
+      per-hour: ${RATE_LIMIT_BASIC_PER_HOUR:500}
+    PRO:
+      per-second: ${RATE_LIMIT_PRO_PER_SECOND:100}
+      burst: ${RATE_LIMIT_PRO_BURST:200}
+      per-hour: ${RATE_LIMIT_PRO_PER_HOUR:5000}

@@ -4,7 +4,7 @@ export
 COMPOSE = docker compose -f infra/docker-compose.yml --env-file .env
 
 infra:
-	$(COMPOSE) up -d postgres redis zookeeper kafka kafka-init minio vault vault-init keycloak
+	$(COMPOSE) up -d postgres redis redis-insight zookeeper kafka kafka-init minio vault vault-init keycloak
 
 infra-down:
 	$(COMPOSE) down
@@ -37,6 +37,6 @@ vault-init:
 	$(COMPOSE) run --rm vault-init
 
 token:
-	curl -s -X POST http://localhost:8180/realms/mediaflow/protocol/openid-connect/token \
+	@curl -s -X POST http://localhost:8180/realms/mediaflow/protocol/openid-connect/token \
 		-d "grant_type=password&client_id=mediaflow-gateway&client_secret=$${KEYCLOAK_CLIENT_SECRET}&username=testuser&password=testpass" \
-		| jq -r '.access_token'
+		| jq -r '.access_token' | tr -d '\n'
